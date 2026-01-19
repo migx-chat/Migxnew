@@ -2558,9 +2558,13 @@ module.exports = (io, socket) => {
         // Check if Top 1 in any category (from cache - fast Redis lookup)
         isTop1UserFlag = await isTop1User(userId);
         
-        // Top 1 users get pink color
-        if (isTop1UserFlag) {
+        // Check stored top like reward (from weekly leaderboard reset)
+        const hasStoredReward = sender?.has_top_like_reward && sender?.top_like_reward_expiry && new Date(sender.top_like_reward_expiry) > now;
+        
+        // Top 1 users get pink color (either from cache OR stored reward that hasn't expired)
+        if (isTop1UserFlag || hasStoredReward) {
           usernameColor = '#FF69B4';
+          isTop1UserFlag = true; // Mark as top1 for badge display
         }
       } catch (error) {
         console.error('Error checking top1 status for chat message:', error);

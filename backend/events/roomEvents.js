@@ -452,6 +452,12 @@ module.exports = (io, socket) => {
             
             // Check if Top 1 in any category (from cache - fast Redis lookup)
             isTop1UserFlag = await isTop1User(userId);
+            
+            // Check stored top like reward (from weekly leaderboard reset) - only if not expired
+            const hasStoredReward = user?.has_top_like_reward && user?.top_like_reward_expiry && new Date(user.top_like_reward_expiry) > now;
+            if (hasStoredReward) {
+              isTop1UserFlag = true;
+            }
           } catch (error) {
             console.error('Error checking top1 status:', error);
           }
