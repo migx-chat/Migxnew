@@ -43,9 +43,6 @@ android {
     externalNativeBuild {
         cmake {
             version "3.22.1"
-            arguments "-DANDROID_STL=c++_shared",
-                  "-DCMAKE_CXX_STANDARD=20",
-                  "-DCMAKE_CXX_STANDARD_REQUIRED=ON"
         }
     }
 
@@ -60,7 +57,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags "-std=c++20 -D_LIBCPP_ENABLE_CXX20_REMOVED_FEATURES"
+                cppFlags "-std=c++20"
             }
         }
 
