@@ -84,21 +84,27 @@ def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 android {
     ndkVersion "26.1.10909125"
 
-    buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk 35
+    externalNativeBuild {
+        cmake {
+            version "3.22.1"
+        }
+    }
 
-    namespace 'com.migx.app'
     defaultConfig {
         applicationId 'com.migx.app'
         minSdkVersion 24
         targetSdkVersion 35
-        versionCode 1
-        versionName "1.0.0"
 
-        buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
-        
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++20 -D_LIBCPP_ENABLE_CXX20_REMOVED_FEATURES"
+            }
+        }
+
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"
+
+        buildConfigField "String", "REACT_NATIVE_RELE
         }
     }
 
