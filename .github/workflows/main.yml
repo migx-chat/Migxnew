@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  ANDROID_NDK_VERSION: "25.1.8937393"
+  ANDROID_NDK_VERSION: "26.1.10909125"
 
 jobs:
   build:
