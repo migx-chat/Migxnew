@@ -13,7 +13,7 @@ router.get('/top-level', async (req, res) => {
               COALESCE(ul.level, 1) as level, COALESCE(ul.xp, 0) as xp
        FROM users u
        LEFT JOIN user_levels ul ON u.id = ul.user_id
-       WHERE u.is_active = true AND u.role = 'normal'
+       WHERE u.is_active = true AND u.role = 'user'
        ORDER BY level DESC, xp DESC
        LIMIT $1`,
       [Math.min(parseInt(limit), 5)]
@@ -287,7 +287,7 @@ router.get('/all', async (req, res) => {
                 u.has_top_like_reward, u.top_like_reward_expiry
          FROM users u
          LEFT JOIN user_levels ul ON u.id = ul.user_id
-         WHERE u.is_active = true AND u.role = 'normal'
+         WHERE u.is_active = true AND u.role = 'user'
          ORDER BY level DESC, xp DESC
          LIMIT 5`,
         []
@@ -301,7 +301,7 @@ router.get('/all', async (req, res) => {
          FROM users u
          LEFT JOIN user_gifts ug ON u.id = ug.sender_id
          LEFT JOIN user_levels ul ON u.id = ul.user_id
-         WHERE u.is_active = true AND u.role = 'normal'
+         WHERE u.is_active = true AND u.role = 'user'
          GROUP BY u.id, u.username, u.avatar, u.gender, u.role, u.country, ul.level, u.has_top_like_reward, u.top_like_reward_expiry
          HAVING COUNT(ug.id) > 0
          ORDER BY total_gifts_sent DESC, total_cost DESC
@@ -317,7 +317,7 @@ router.get('/all', async (req, res) => {
          FROM users u
          LEFT JOIN user_gifts ug ON u.id = ug.receiver_id
          LEFT JOIN user_levels ul ON u.id = ul.user_id
-         WHERE u.is_active = true AND u.role = 'normal'
+         WHERE u.is_active = true AND u.role = 'user'
          GROUP BY u.id, u.username, u.avatar, u.gender, u.role, u.country, ul.level, u.has_top_like_reward, u.top_like_reward_expiry
          HAVING COUNT(ug.id) > 0
          ORDER BY total_gifts_received DESC, total_value DESC
@@ -332,7 +332,7 @@ router.get('/all', async (req, res) => {
          FROM users u
          LEFT JOIN profile_footprints pf ON u.id = pf.profile_id
          LEFT JOIN user_levels ul ON u.id = ul.user_id
-         WHERE u.is_active = true AND u.role = 'normal'
+         WHERE u.is_active = true AND u.role = 'user'
          GROUP BY u.id, u.username, u.avatar, u.gender, u.role, u.country, ul.level, u.has_top_like_reward, u.top_like_reward_expiry
          HAVING COUNT(pf.id) > 0
          ORDER BY total_footprints DESC
@@ -350,7 +350,7 @@ router.get('/all', async (req, res) => {
          LEFT JOIN game_history gh ON u.id = gh.user_id
            AND gh.created_at >= NOW() - INTERVAL '7 days'
          LEFT JOIN user_levels ul ON u.id = ul.user_id
-         WHERE u.is_active = true AND u.role = 'normal'
+         WHERE u.is_active = true AND u.role = 'user'
          GROUP BY u.id, u.username, u.avatar, u.gender, u.role, u.country, ul.level, u.has_top_like_reward, u.top_like_reward_expiry
          HAVING COUNT(gh.id) > 0
          ORDER BY total_games DESC, wins DESC
@@ -369,7 +369,7 @@ router.get('/all', async (req, res) => {
            AND gh.created_at >= NOW() - INTERVAL '7 days'
            AND gh.result = 'win'
          LEFT JOIN user_levels ul ON u.id = ul.user_id
-         WHERE u.is_active = true AND u.role = 'normal'
+         WHERE u.is_active = true AND u.role = 'user'
          GROUP BY u.id, u.username, u.avatar, u.gender, u.role, u.country, ul.level, u.has_top_like_reward, u.top_like_reward_expiry
          HAVING SUM(gh.reward_amount) > 0
          ORDER BY total_winnings DESC, wins DESC
@@ -399,7 +399,7 @@ router.get('/all', async (req, res) => {
          FROM users u
          LEFT JOIN user_likes_leaderboard ull ON u.id = ull.user_id AND ull.week_year = $1
          LEFT JOIN user_levels ul ON u.id = ul.user_id
-         WHERE u.is_active = true AND u.role = 'normal'
+         WHERE u.is_active = true AND u.role = 'user'
          GROUP BY u.id, u.username, u.avatar, u.gender, u.role, u.country, ul.level, ull.likes_count, u.has_top_like_reward, u.top_like_reward_expiry
          HAVING COALESCE(ull.likes_count, 0) > 0
          ORDER BY likes_count DESC
@@ -451,14 +451,14 @@ router.get('/top1-users', async (req, res) => {
     const weekYear = `${now.getFullYear()}-W${weekNum}`;
 
     const [topLevel, topGiftSender, topGiftReceiver, topFootprint, topGamer, topGet, topMerchant, topLikes] = await Promise.all([
-      query(`SELECT u.id FROM users u LEFT JOIN user_levels ul ON u.id = ul.user_id WHERE u.is_active = true AND u.role = 'normal' ORDER BY COALESCE(ul.level, 1) DESC, COALESCE(ul.xp, 0) DESC LIMIT 1`),
-      query(`SELECT u.id FROM users u LEFT JOIN user_gifts ug ON u.id = ug.sender_id WHERE u.is_active = true AND u.role = 'normal' GROUP BY u.id HAVING COUNT(ug.id) > 0 ORDER BY COUNT(ug.id) DESC LIMIT 1`),
-      query(`SELECT u.id FROM users u LEFT JOIN user_gifts ug ON u.id = ug.receiver_id WHERE u.is_active = true AND u.role = 'normal' GROUP BY u.id HAVING COUNT(ug.id) > 0 ORDER BY COUNT(ug.id) DESC LIMIT 1`),
-      query(`SELECT u.id FROM users u LEFT JOIN profile_footprints pf ON u.id = pf.profile_id WHERE u.is_active = true AND u.role = 'normal' GROUP BY u.id HAVING COUNT(pf.id) > 0 ORDER BY COUNT(pf.id) DESC LIMIT 1`),
-      query(`SELECT u.id FROM users u LEFT JOIN game_history gh ON u.id = gh.user_id AND gh.created_at >= NOW() - INTERVAL '7 days' WHERE u.is_active = true AND u.role = 'normal' GROUP BY u.id HAVING COUNT(gh.id) > 0 ORDER BY COUNT(gh.id) DESC LIMIT 1`),
-      query(`SELECT u.id FROM users u LEFT JOIN game_history gh ON u.id = gh.user_id AND gh.created_at >= NOW() - INTERVAL '7 days' AND gh.result = 'win' WHERE u.is_active = true AND u.role = 'normal' GROUP BY u.id HAVING SUM(gh.reward_amount) > 0 ORDER BY SUM(gh.reward_amount) DESC LIMIT 1`),
+      query(`SELECT u.id FROM users u LEFT JOIN user_levels ul ON u.id = ul.user_id WHERE u.is_active = true AND u.role = 'user' ORDER BY COALESCE(ul.level, 1) DESC, COALESCE(ul.xp, 0) DESC LIMIT 1`),
+      query(`SELECT u.id FROM users u LEFT JOIN user_gifts ug ON u.id = ug.sender_id WHERE u.is_active = true AND u.role = 'user' GROUP BY u.id HAVING COUNT(ug.id) > 0 ORDER BY COUNT(ug.id) DESC LIMIT 1`),
+      query(`SELECT u.id FROM users u LEFT JOIN user_gifts ug ON u.id = ug.receiver_id WHERE u.is_active = true AND u.role = 'user' GROUP BY u.id HAVING COUNT(ug.id) > 0 ORDER BY COUNT(ug.id) DESC LIMIT 1`),
+      query(`SELECT u.id FROM users u LEFT JOIN profile_footprints pf ON u.id = pf.profile_id WHERE u.is_active = true AND u.role = 'user' GROUP BY u.id HAVING COUNT(pf.id) > 0 ORDER BY COUNT(pf.id) DESC LIMIT 1`),
+      query(`SELECT u.id FROM users u LEFT JOIN game_history gh ON u.id = gh.user_id AND gh.created_at >= NOW() - INTERVAL '7 days' WHERE u.is_active = true AND u.role = 'user' GROUP BY u.id HAVING COUNT(gh.id) > 0 ORDER BY COUNT(gh.id) DESC LIMIT 1`),
+      query(`SELECT u.id FROM users u LEFT JOIN game_history gh ON u.id = gh.user_id AND gh.created_at >= NOW() - INTERVAL '7 days' AND gh.result = 'win' WHERE u.is_active = true AND u.role = 'user' GROUP BY u.id HAVING SUM(gh.reward_amount) > 0 ORDER BY SUM(gh.reward_amount) DESC LIMIT 1`),
       query(`SELECT u.id FROM users u LEFT JOIN merchant_leaderboard ml ON u.id = ml.user_id AND ml.month_year = $1 WHERE u.is_active = true AND u.role = 'merchant' GROUP BY u.id, ml.total_spent HAVING COALESCE(ml.total_spent, 0) > 0 ORDER BY ml.total_spent DESC LIMIT 1`, [currentMonth]),
-      query(`SELECT u.id FROM users u LEFT JOIN user_likes_leaderboard ull ON u.id = ull.user_id AND ull.week_year = $1 WHERE u.is_active = true AND u.role = 'normal' GROUP BY u.id, ull.likes_count HAVING COALESCE(ull.likes_count, 0) > 0 ORDER BY ull.likes_count DESC LIMIT 1`, [weekYear])
+      query(`SELECT u.id FROM users u LEFT JOIN user_likes_leaderboard ull ON u.id = ull.user_id AND ull.week_year = $1 WHERE u.is_active = true AND u.role = 'user' GROUP BY u.id, ull.likes_count HAVING COALESCE(ull.likes_count, 0) > 0 ORDER BY ull.likes_count DESC LIMIT 1`, [weekYear])
     ]);
 
     // Collect all top 1 user IDs
