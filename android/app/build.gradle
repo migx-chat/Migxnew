@@ -82,16 +82,16 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
-    ndkVersion "26.1.10909125"
+    ndkVersion "25.1.8937393"
 
     buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk 34
+    compileSdk 35
 
     namespace 'com.migx.app'
     defaultConfig {
         applicationId 'com.migx.app'
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0.0"
 
