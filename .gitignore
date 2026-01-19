@@ -1,12 +1,26 @@
 # ========================================
-# PUSH FRONTEND KE GITHUB (TANPA BACKEND)
+# PUSH BACKEND KE GITHUB (TANPA FRONTEND)
 # ========================================
 
-# Ignore backend folder
-backend/
+# Ignore mobile app folders
+app/
+components/
+hooks/
+theme/
+utils/
+assets/
+android/
 
-# Ignore admin panel (jika tidak diperlukan)
-# admin-panel/
+# Ignore mobile config files
+app.json
+babel.config.js
+metro.config.js
+tsconfig.json
+expo-env.d.ts
+react-native.config.js
+
+# Ignore GitHub Actions (mobile build)
+.github/
 
 # ========================================
 # DEPENDENCIES
