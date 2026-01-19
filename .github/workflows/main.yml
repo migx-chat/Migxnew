@@ -13,31 +13,53 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      # =========================
+      # Checkout
+      # =========================
       - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
+        uses: actions/checkout@v4
 
+      # =========================
+      # Node
+      # =========================
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
+      # =========================
+      # Java
+      # =========================
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
+      # =========================
+      # Android SDK
+      # =========================
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # =========================
+      # Install NDK 26 (WAJIB)
+      # =========================
       - name: Install NDK
         run: |
-          sdkmanager --install "ndk;${{ env.ANDROID_NDK_VERSION }}"
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+          sdkmanager --install "ndk;26.1.10909125"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
 
+      - name: Verify NDK
+        run: |
+          echo "NDK HOME = $ANDROID_NDK_HOME"
+          ls $ANDROID_NDK_HOME
+
+      # =========================
+      # Cache Gradle
+      # =========================
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -48,20 +70,32 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
+      # =========================
+      # Install JS deps
+      # =========================
       - name: Install dependencies
         run: npm install
 
-      - name: Verify Android config
+      # =========================
+      # Clean old native cache
+      # =========================
+      - name: Clean build cache
         run: |
-          echo "Using pre-configured android folder (no prebuild needed)"
-          cat android/gradle.properties | grep -E "newArchEnabled|reactNativeArchitectures"
+          rm -rf android/.cxx
+          rm -rf ~/.gradle/caches
 
+      # =========================
+      # Build APK
+      # =========================
       - name: Build Android APK
         working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
 
+      # =========================
+      # Upload APK
+      # =========================
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
